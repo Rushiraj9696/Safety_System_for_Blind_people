@@ -1,0 +1,120 @@
+import RPi.GPIO as GPIO
+import time
+import urllib.request as urllib2
+import sys
+import requests
+from time import sleep
+URL='https://api.thingspeak.com/update?api_key=3RPWYS8UU4998NF7&field1='
+
+
+#GPIO SETUP
+IR1=33
+led=35
+buzzer=5
+ldr=40
+GPIO_TRIG = 37 
+
+GPIO_ECHO = 38
+
+
+
+
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(IR1, GPIO.IN)
+GPIO.setup(ldr, GPIO.IN)
+
+
+
+
+GPIO.setup(GPIO_TRIG, GPIO.OUT) 
+
+GPIO.setup(GPIO_ECHO, GPIO.IN)
+
+
+GPIO.setup(led, GPIO.OUT)
+GPIO.setup(buzzer, GPIO.OUT)
+GPIO.output(buzzer,1)
+sleep(10)
+GPIO.output(buzzer,0)
+
+
+
+try:
+        print("system start...")
+        
+        time.sleep(5)
+        
+        while 1:
+            
+              
+            
+           
+                
+                data1=GPIO.input(IR1)
+                data2=GPIO.input(ldr)
+                data3=18.4680
+                data4=73.8368
+                          
+                
+
+                GPIO.output(GPIO_TRIG, GPIO.LOW) 
+
+                time.sleep(2) 
+
+                GPIO.output(GPIO_TRIG, GPIO.HIGH) 
+
+                time.sleep(0.00001) 
+
+                GPIO.output(GPIO_TRIG, GPIO.LOW) 
+
+                while GPIO.input(GPIO_ECHO)==0: 
+
+                    start_time = time.time() 
+
+                while GPIO.input(GPIO_ECHO)==1: 
+
+                    Bounce_back_time = time.time()
+                    pulse_duration = Bounce_back_time - start_time
+                distance = round(pulse_duration * 17150, 2) 
+                data5=distance
+                print (f"Distance: {distance} cm")
+                if(data5<25):
+                    print("near obstacle")
+                    GPIO.output(buzzer,1)
+                    sleep(3)
+                    
+                else:
+                    print("far obstacle")
+                    GPIO.output(buzzer,0)
+
+
+                
+                a=GPIO.input(IR1)
+                b=GPIO.input(ldr)
+                
+                if(b==True):
+                    print("Torch ON")
+                    GPIO.output(led,1)
+                    
+                else:
+                    print("Torch OFf")
+                    GPIO.output(led,0)
+                
+                    
+            
+                NEW_URL=URL+str(data1)+'&field2='+str(data2)+'&field3='+str(data3)+'&field4='+str(data4)+'&field5='+str(data5)
+                
+                r=requests.get(NEW_URL)
+                print(r)
+
+            
+   
+           
+except KeyboardInterrupt:
+    # If there is a KeyboardInterrupt (when you press ctrl+c), exit the program and cleanup
+    print("Cleaning up!")
+    display.lcd_clear()
+    
+
+   
